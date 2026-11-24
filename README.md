@@ -2,7 +2,7 @@
 
 Extracteur de posts de groupes Facebook **publics**, inspiré du contrat d'entrée/sortie de `apify/facebook-groups-scraper`.
 
-> Statut : phase de spécification. Le code n'est pas encore implémenté. Voir [SPEC.md](SPEC.md).
+> Statut : toute la chaîne est implémentée (entrée, flux, extraction, exports, CLI, API HTTP) et testée sur fixtures, **sauf le parseur des réponses GraphQL de Facebook**. Sans connexion, Facebook redirige vers sa page de connexion (observé le 2026-11-24 depuis un datacenter) : le format réel n'a pas pu être observé. Le CLI échoue donc par groupe avec `LOGIN_REQUIRED`. Voir [SPEC.md](SPEC.md).
 
 ## Avertissement légal
 
@@ -35,35 +35,52 @@ Un item par post : `facebookUrl`, `url`, `time`, `user`, `text`, compteurs de r�
 
 Formats d'export prévus : JSON, JSONL, CSV, XLSX, HTML, XML.
 
-## Utilisation prévue (CLI)
+## Utilisation
 
 ```bash
-fbgroups --url https://www.facebook.com/groups/<slug> --limit 20 --sort CHRONOLOGICAL --since "2 days" --format jsonl --out out/
+npm ci
+npm run build
+node dist/cli.js --url https://www.facebook.com/groups/<slug> --limit 20 --sort CHRONOLOGICAL --since "2 days" --format jsonl --out out/
 ```
 
-Configuration proxy via la variable d'environnement `PROXY_URL`. Des proxies résidentiels sont nécessaires en pratique pour éviter les blocages.
+Options : `--url` (répétable), `--input fichier.json`, `--limit`, `--sort`, `--since`, `--format json|jsonl|csv|xlsx|html|xml`, `--out`, `--resume` (état persisté, aucun doublon entre exécutions), `--concurrency`, `--proxy`. Code de sortie : 0 succès, 1 au moins un groupe en échec, 2 entrée invalide.
+
+Proxy : option `--proxy` ou variable `PROXY_URL`. Des proxies résidentiels sont nécessaires en pratique pour éviter les blocages.
+
+### API HTTP
+
+`createApi(sourceFactory)` (`src/api.ts`) expose `POST /runs`, `GET /runs/:id` et `GET /runs/:id/dataset?format=`. Les runs sont conservés en mémoire.
+
+### Brancher le parseur Facebook
+
+`PlaywrightSource` intercepte les réponses réseau pendant le défilement et les convertit via un `GraphqlParser` injecté (`(body) => RawPage | null`, `RawPost` défini dans `src/model/post.ts`). Ce parseur reste à écrire sur des fixtures réelles. Il en va de même pour les cookies de consentement, le tri selon `viewOption` et le schéma exact des médias (`attachments`, provisoire). L'OCR est une interface (`OcrProvider`) : aucun moteur n'est fourni.
 
 ## Architecture
 
-TypeScript, Node ≥ 20, Playwright, Crawlee, Zod, Vitest.
+TypeScript, Node ≥ 20, Playwright, Zod, Vitest.
 
 ```
 src/
   input/     validation Zod, parseur de dates
-  facebook/  url, session, feed, extract, comments
-  model/     types Post, Comment, Media
+  facebook/  url, session, source, feed, extract
+  model/     schémas Post, Comment, Attachment et types bruts
   output/    writers JSON, JSONL, CSV, XLSX, HTML, XML
+  run.ts     orchestration (erreurs par groupe, reprise, backoff, concurrence)
+  ocr.ts     interface OCR
   cli.ts
   api.ts
-tests/fixtures/
+tests/
 ```
 
-## Feuille de route
+## Tests
 
-Plan par étapes et critères d'acceptation : sections 6 et 7 de [SPEC.md](SPEC.md).
+```bash
+npm test
+```
+
+Aucun accès réseau externe requis.
 
 ## Limites
 
 - Groupes privés ou inexistants : erreur explicite par URL, sans arrêt global.
-- Médias et OCR : schéma à établir par observation.
-- Endpoints et mécanismes anti-bot de Facebook : à déterminer pendant l'implémentation.
+- Critères d'acceptation de SPEC §7 sur groupes réels (3 groupes, 500 posts en moins de 2 minutes) : non vérifiés, faute de parseur Facebook.

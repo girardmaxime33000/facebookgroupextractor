@@ -14,7 +14,8 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "dev": "tsx src/cli.ts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "ci": "npm run typecheck && npm test && npm run build"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
@@ -23,6 +24,7 @@
     "vitest": "^5.1.1"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "playwright": "^1.63.0",
     "zod": "^4.6.7"
   }
