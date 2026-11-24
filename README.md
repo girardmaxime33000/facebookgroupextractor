@@ -57,7 +57,7 @@ Proxy : option `--proxy` ou variable `PROXY_URL`. Des proxies résidentiels sont
 
 ## Architecture
 
-TypeScript, Node ≥ 20, Playwright, Crawlee, Zod, Vitest.
+TypeScript, Node ≥ 20, Playwright, Zod, Vitest.
 
 ```
 src/
