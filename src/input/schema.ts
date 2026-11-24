@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { parseNewerThan } from "./dates.js";
-import { parseGroupUrl } from "./url.js";
+import { parseGroupUrl } from "../facebook/url.js";
 
 export const VIEW_OPTIONS = [
   "CHRONOLOGICAL",
