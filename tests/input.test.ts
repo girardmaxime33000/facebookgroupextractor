@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ZodError } from "zod";
 import { parseInput } from "../src/input/index.js";
 import { parseNewerThan } from "../src/input/dates.js";
-import { parseGroupUrl } from "../src/input/url.js";
+import { parseGroupUrl } from "../src/facebook/url.js";
 
 const now = new Date("2025-06-15T12:00:00.000Z");
 
