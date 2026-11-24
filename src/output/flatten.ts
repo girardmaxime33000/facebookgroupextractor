@@ -6,7 +6,7 @@ const COLUMNS = [
   "facebookUrl", "url", "time", "user.id", "user.name", "text", "topReactionsCount", "feedbackId",
   "reactionLikeCount", "reactionLoveCount", "reactionHahaCount", "reactionWowCount", "reactionSadCount",
   "reactionAngryCount", "reactionCareCount", "id", "legacyId", "likesCount", "sharesCount", "commentsCount",
-  "topComments", "facebookId", "groupTitle", "inputUrl", "pageAdLibrary.is_business_page_active", "pageAdLibrary.id",
+  "topComments", "facebookId", "groupTitle", "inputUrl", "pageAdLibrary.is_business_page_active", "pageAdLibrary.id", "attachments",
 ] as const;
 
 export const COLUMN_NAMES: readonly string[] = COLUMNS;
@@ -17,6 +17,7 @@ export function flattenPost(post: Post): Row {
   for (const col of COLUMNS) {
     let v: unknown;
     if (col === "topComments") v = JSON.stringify(post.topComments);
+    else if (col === "attachments") v = post.attachments ? JSON.stringify(post.attachments) : null;
     else if (col.includes(".")) {
       const [a, b] = col.split(".") as [keyof Post, string];
       v = (post[a] as Record<string, unknown> | undefined)?.[b];

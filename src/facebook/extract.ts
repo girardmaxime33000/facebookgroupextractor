@@ -73,5 +73,6 @@ export function extractPost(raw: RawPost, ctx: ExtractContext): Post {
   };
   if (raw.topReactionsCount !== undefined) post.topReactionsCount = raw.topReactionsCount;
   if (raw.pageAdLibrary) post.pageAdLibrary = raw.pageAdLibrary;
+  if (raw.attachments?.length) post.attachments = raw.attachments.map((a) => ({ ...a }));
   return post;
 }

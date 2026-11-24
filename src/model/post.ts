@@ -18,6 +18,19 @@ export const CommentSchema = z.object({
   threadingDepth: z.number().int().min(0),
 });
 
+/**
+ * Médias : structure PROVISOIRE. Le README de l'original annonce images, vidéos, miniatures, dimensions
+ * et texte OCR sans en montrer le schéma ; à ajuster après observation réelle.
+ */
+export const AttachmentSchema = z.object({
+  type: z.enum(["photo", "video", "link", "other"]),
+  url: z.string(),
+  thumbnail: z.string().optional(),
+  width: z.number().int().optional(),
+  height: z.number().int().optional(),
+  ocrText: z.string().optional(),
+});
+
 export const PostSchema = z.object({
   facebookUrl: z.string(),
   url: z.string(),
@@ -43,10 +56,12 @@ export const PostSchema = z.object({
   groupTitle: z.string(),
   inputUrl: z.string(),
   pageAdLibrary: z.object({ is_business_page_active: z.boolean(), id: z.string() }).optional(),
+  attachments: z.array(AttachmentSchema).optional(),
 });
 
 export type Comment = z.infer<typeof CommentSchema>;
 export type Post = z.infer<typeof PostSchema>;
+export type Attachment = z.infer<typeof AttachmentSchema>;
 
 export const REACTION_TYPES = ["like", "love", "haha", "wow", "sad", "angry", "care"] as const;
 export type ReactionType = (typeof REACTION_TYPES)[number];
@@ -85,4 +100,5 @@ export interface RawPost {
   comments: RawComment[];
   group: { id: string; title: string; slug: string };
   pageAdLibrary?: { is_business_page_active: boolean; id: string };
+  attachments?: Attachment[];
 }
